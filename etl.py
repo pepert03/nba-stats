@@ -52,16 +52,23 @@ def get_data_scraping():
     response = requests.get(url)
     soup = bs4.BeautifulSoup(response.text, 'html.parser')
     partido = soup.find('p', text=re.compile(team))
-    a = partido.text
-    pronostico = partido.find_next('b').text
+    if partido:
+        a = partido.text
+        pronostico = partido.find_next('b').text
+    else:
+        a = 'No hay partido'
+        pronostico = 'No hay pronostico'
     return a, pronostico
-    
-
-
 
     
 def to_pdf(df1, df2, partido, pronostico):
     pdf = PDF()
+    pdf.add_page()
+    pdf.set_font('Helvetica', 'B', 20)
+    pdf.cell(0, 10, 'Chicago Bulls', 0, 0, 'C')
+    pdf.ln(20)
+    pdf.set_font('Helvetica', 'B', 15)
+    pdf.cell(0, 10, 'Season 2022', 0, 0, 'C')
     pdf.add_page()
     pdf.set_font('Helvetica', 'B', 8)
     pdf.cell(45, 10, str(df1.columns[0]), 1, 0, 'C')
