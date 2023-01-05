@@ -1,30 +1,4 @@
-'''
-Práctica tema 5, Api y web scraping:
-
--        Senior data analyst de la NBA.
-
-Como senior data analyst, uno de los GM más innovadores de la NBA ha decidido evaluar como se va a comportar su equipo durante los partidos de este año. Por lo que necesitaría construir un analizador de las principales estadísticas del equipo hasta el momento para la temporada 2022-2023 y un pronóstico para el próximo partido. Para ello debes de disponer de una ETL que extraiga, transforme los datos y guarde un informe de los puntos clave del equipo en cuestión en formato pdf y ofrezca por pantalla la predicción para el próximo partido. Entregando el siguiente contenido en el repositorio de datos:
-
-o   Código de una ETL que extraiga datos de una API de datos de la NBA, a continuación, se dejan un par de ejemplos de API:
-
-https://www.api-basketball.com/
-
-https://sportsdata.io/
-
-o   Además  una ETL que obtenga datos usando técnicas de web scraping donde se tendrá que elegir una fuente de datos para obtener pronósticos, como por ejemplo:
-
-https://www.sportytrader.es/
-
-https://www.solobasket.com/apuestas-deportivas/pronosticos-nba/
-
-o   Fichero requirements.txt para la instalación de los recursos necesarios
-
-o   Fichero de config.txt para la configuración necesaria de las ETLs (como por ejemplo los credenciales usados para consumir las APIs, recordar no subir vuestras credenciales, solo el fichero con la estructura necesaria)
-
-o   README.md con la descripción general del repo y las instrucciones de uso.
-'''
-
-# Import libraries
+import re
 import requests
 import json
 import pandas as pd
@@ -50,23 +24,12 @@ class PDF(FPDF):
 
 def get_data_api():
     url = 'https://api.sportsdata.io/v3/nba/scores/json/Standings/2022'
-    # api key = c7c28f449c444a89a2d7e3b1bf9b82d1
     headers = {
         'Ocp-Apim-Subscription-Key': 'c7c28f449c444a89a2d7e3b1bf9b82d1'
     }
     response = requests.request("GET", url, headers=headers)
     data = response.json()
     df = pd.DataFrame(data)
-    '''
-    columnas = 
-        Index(['Season', 'SeasonType', 'TeamID', 'Key', 'City', 'Name', 'Conference',
-       'Division', 'Wins', 'Losses', 'Percentage', 'ConferenceWins',
-       'ConferenceLosses', 'DivisionWins', 'DivisionLosses', 'HomeWins',
-       'HomeLosses', 'AwayWins', 'AwayLosses', 'LastTenWins', 'LastTenLosses',
-       'PointsPerGameFor', 'PointsPerGameAgainst', 'Streak', 'GamesBack',
-       'StreakDescription', 'GlobalTeamID', 'ConferenceRank', 'DivisionRank'],
-      dtype='object')
-    '''
     df = df.rename(columns={'City': 'city', 'Name': 'name','Conference': '   E/W', 'Percentage': 'Percent','HomeWins': 'HomeW', 'HomeLosses': 'HomeL', 'AwayWins': 'AwayW', 'AwayLosses': 'AwayL', 'PointsPerGameFor': '  PPG', 'PointsPerGameAgainst': 'PPGA', 'GamesBack': '  GB', 'ConferenceRank': 'C_Rank'})
     df['Team'] = df['city'] + ' ' + df['name']
     df = df[['Team','   E/W', 'Wins', 'Losses', 'Percent', 'HomeW', 'HomeL', 'AwayW', 'AwayL', '  PPG', 'PPGA', '  GB', 'C_Rank']]
@@ -75,7 +38,6 @@ def get_data_api():
 def get_data_api2():
     team = 'CHI'
     url = 'https://api.sportsdata.io/v3/nba/scores/json/Players/' + team
-    # api key
     headers = {
         'Ocp-Apim-Subscription-Key': 'c7c28f449c444a89a2d7e3b1bf9b82d1'
     }
@@ -91,15 +53,72 @@ def get_data_api2():
 
 
 def get_data_scraping():
-    url = 'https://www.sportytrader.es/pronosticos/nba'
-    page = urllib.request.urlopen(url)
-    soup = bs4.BeautifulSoup(page, 'html.parser')
-    table = soup.find('table', attrs={'class': 'table table-striped table-bordered table-hover table-sm'})
-    table_body = table.find('tbody')
-    rows = table_body.find_all('tr')
+    '''
+    <a href="/es/pronosticos/basquetbol/nba/pronostico-bulls-vs-nets/1032428/" title="Pronostico Chicago Bulls vs. Brooklyn Nets 4 Jan 2023" class="flex items-center justify-center flex-col text-center py-2 px-4">
+    <b class="text-xl">Pronostico Chicago Bulls vs. Brooklyn Nets 4 Jan 2023</b>
+    </a>
+    <div class="grid grid-cols-12 px-4 text-sm md:text-base lg:text-sm">
+    <div class="col-span-5 team">
+    <b>
+    <a href="/es/equipos/basquetbol/nba/brooklyn-nets/"> Nets&nbsp; Brooklyn </a> </b>
+    </div>
+    <div class="col-span-2 text-center odd-title">ODDS</div>
+    <div class="col-span-5 text-right team">
+    <b>
+    <a href="/es/equipos/basquetbol/nba/chicago-bulls/"> Bulls&nbsp; Chicago </a> </b>
+    </div>
+    <hr class="my-1 col-span-12 border-gray-300">
+    <div class="col-span-5 team">
+    0&nbsp;
+    </div>
+    <div class="col-span-2 text-center odd-title"> APERTURA</div>
+    <div class="col-span-5 text-right team">
+    233.5&nbsp;
+    </div>
+    <hr class="my-1 col-span-12 border-gray-300">
+    <div class="col-span-5 team">
+    spread -5.5 -110 </div>
+    <div class="col-span-2 text-center odd-title"> LINEA ACTUAL</div>
+    <div class="col-span-5 text-right team">
+    234.5 over -110 </div>
+    <hr class="my-1 col-span-12 border-gray-300">
+    <div class="col-span-5 team">
+    -220&nbsp;
+    </div>
+    <div class="col-span-2 text-center odd-title"> LINEA DE DINERO</div>
+    <div class="col-span-5 text-right team">
+    +180&nbsp;
+    </div>
+    <hr class="my-1 col-span-12 border-gray-300">
+    <div class="col-span-5 team">
+    120 </div>
+    <div class="col-span-2 text-center text-sm font-bold odd-title"> PRONOSTICO</div>
+    <div class="col-span-5 text-right team">
+    114 </div>
+    <hr class="my-1 col-span-12 border-gray-300">
+    <div class="col-span-5 team">
+    77 </div>
+    <div class="col-span-2 text-center text-sm font-bold odd-title"> RESULTADO</div>
+    <div class="col-span-5 text-right team">
+    81 </div>
+    <hr class="my-1 col-span-12 border-gray-300">
+    </div>
+    '''
+
+    team = 'Bulls'
+    url = 'https://www.solobasket.com/apuestas-deportivas/pronosticos-nba/'
+    response = requests.get(url)
+    soup = bs4.BeautifulSoup(response.text, 'html.parser')
+    partido = soup.find('p', text=re.compile(team))
+    a = partido.text
+    pronostico = partido.find_next('b').text
+    return a, pronostico
+    
+
+
 
     
-def to_pdf(df1, df2):
+def to_pdf(df1, df2, partido, pronostico):
     pdf = PDF()
     pdf.add_page()
     pdf.set_font('Helvetica', 'B', 8)
@@ -137,11 +156,24 @@ def to_pdf(df1, df2):
                 pdf.cell(14, 12, str(df2.iloc[i,j]), 1, 0, 'C')
         pdf.ln()
 
+    pdf.ln(60)
+    pdf.set_font('Helvetica', 'B', 15)
+    # escribir: Siguiente Partido y Pronostico
+    pdf.cell(150, 20, 'SIGUIENTE PARTIDO', 1, 0, 'C', center=True)
+    pdf.ln()
+    pdf.cell(150, 20, partido, 1, 0, 'C', center=True)
+    pdf.ln()
+    pdf.cell(150, 20, 'PRONOSTICO', 1, 0, 'C', center=True)
+    pdf.ln()
+    pdf.cell(150, 20, pronostico, 1, 0, 'C', center=True)
+    pdf.ln()
+
     pdf.output('nba_stats.pdf', 'F')
 
 
 if __name__ == '__main__':
     df1 = get_data_api()
     df2 = get_data_api2()
-    to_pdf(df1, df2)
+    partido,pronostico = get_data_scraping()
+    to_pdf(df1, df2, partido, pronostico)
 
