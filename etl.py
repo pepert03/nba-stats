@@ -36,7 +36,10 @@ class PDF(FPDF):
 def get_data_api():
     url = 'https://api.sportsdata.io/v3/nba/scores/json/Standings/2022'
     with open('config.txt', 'r') as f:
-        headers = {'Ocp-Apim-Subscription-Key': f.read()}
+        config = eval(f.read())
+    headers = {
+        'Ocp-Apim-Subscription-Key': config['Api-Key']
+    }
     response = requests.request("GET", url, headers=headers)
     data = response.json()
     df = pd.DataFrame(data)
@@ -49,7 +52,10 @@ def get_data_api2():
     team = 'CHI'
     url = 'https://api.sportsdata.io/v3/nba/scores/json/Players/' + team
     with open('config.txt', 'r') as f:
-        headers = {'Ocp-Apim-Subscription-Key': f.read()}
+        config = eval(f.read())
+    headers = {
+        'Ocp-Apim-Subscription-Key': config['Api-Key']
+    }
 
     response = requests.request("GET", url, headers=headers)
     data = response.json()

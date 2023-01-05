@@ -7,7 +7,7 @@ Instalar librerías de Python para el análisis de datos:
 pip install -r requirements.txt
 ```
 Se require una Api-key para [sportsdata](https://api.sportsdata.io/v3/nba/) para poder ejecutar el programa.
-Se deberá escribir la api-key en el archivo `config.txt`, y eso es todo lo necesario para ejecutar el programa.
+Se deberá escribir la api-key en el archivo `config.txt` sustituyendo las 'X', y eso es todo lo necesario para ejecutar el programa.
 
 ## Ejecución
 El archivo `etl.py` es el encargado de realizar la extracción, transformación y carga de los datos. Contiene las siguientes funciones:
