@@ -1,14 +1,8 @@
 import re
 import requests
-import json
 import pandas as pd
-import numpy as np
 import bs4
-import urllib.request
-import os
-
 from fpdf import FPDF
-from datetime import datetime
 
 class PDF(FPDF):
     def header(self):
@@ -53,58 +47,6 @@ def get_data_api2():
 
 
 def get_data_scraping():
-    '''
-    <a href="/es/pronosticos/basquetbol/nba/pronostico-bulls-vs-nets/1032428/" title="Pronostico Chicago Bulls vs. Brooklyn Nets 4 Jan 2023" class="flex items-center justify-center flex-col text-center py-2 px-4">
-    <b class="text-xl">Pronostico Chicago Bulls vs. Brooklyn Nets 4 Jan 2023</b>
-    </a>
-    <div class="grid grid-cols-12 px-4 text-sm md:text-base lg:text-sm">
-    <div class="col-span-5 team">
-    <b>
-    <a href="/es/equipos/basquetbol/nba/brooklyn-nets/"> Nets&nbsp; Brooklyn </a> </b>
-    </div>
-    <div class="col-span-2 text-center odd-title">ODDS</div>
-    <div class="col-span-5 text-right team">
-    <b>
-    <a href="/es/equipos/basquetbol/nba/chicago-bulls/"> Bulls&nbsp; Chicago </a> </b>
-    </div>
-    <hr class="my-1 col-span-12 border-gray-300">
-    <div class="col-span-5 team">
-    0&nbsp;
-    </div>
-    <div class="col-span-2 text-center odd-title"> APERTURA</div>
-    <div class="col-span-5 text-right team">
-    233.5&nbsp;
-    </div>
-    <hr class="my-1 col-span-12 border-gray-300">
-    <div class="col-span-5 team">
-    spread -5.5 -110 </div>
-    <div class="col-span-2 text-center odd-title"> LINEA ACTUAL</div>
-    <div class="col-span-5 text-right team">
-    234.5 over -110 </div>
-    <hr class="my-1 col-span-12 border-gray-300">
-    <div class="col-span-5 team">
-    -220&nbsp;
-    </div>
-    <div class="col-span-2 text-center odd-title"> LINEA DE DINERO</div>
-    <div class="col-span-5 text-right team">
-    +180&nbsp;
-    </div>
-    <hr class="my-1 col-span-12 border-gray-300">
-    <div class="col-span-5 team">
-    120 </div>
-    <div class="col-span-2 text-center text-sm font-bold odd-title"> PRONOSTICO</div>
-    <div class="col-span-5 text-right team">
-    114 </div>
-    <hr class="my-1 col-span-12 border-gray-300">
-    <div class="col-span-5 team">
-    77 </div>
-    <div class="col-span-2 text-center text-sm font-bold odd-title"> RESULTADO</div>
-    <div class="col-span-5 text-right team">
-    81 </div>
-    <hr class="my-1 col-span-12 border-gray-300">
-    </div>
-    '''
-
     team = 'Bulls'
     url = 'https://www.solobasket.com/apuestas-deportivas/pronosticos-nba/'
     response = requests.get(url)
@@ -158,7 +100,6 @@ def to_pdf(df1, df2, partido, pronostico):
 
     pdf.ln(60)
     pdf.set_font('Helvetica', 'B', 15)
-    # escribir: Siguiente Partido y Pronostico
     pdf.cell(150, 20, 'SIGUIENTE PARTIDO', 1, 0, 'C', center=True)
     pdf.ln()
     pdf.cell(150, 20, partido, 1, 0, 'C', center=True)
