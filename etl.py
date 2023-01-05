@@ -67,29 +67,81 @@ def get_data_api():
        'StreakDescription', 'GlobalTeamID', 'ConferenceRank', 'DivisionRank'],
       dtype='object')
     '''
-    # cambiar nombre de columnas:
     df = df.rename(columns={'City': 'city', 'Name': 'name','Conference': '   E/W', 'Percentage': 'Percent','HomeWins': 'HomeW', 'HomeLosses': 'HomeL', 'AwayWins': 'AwayW', 'AwayLosses': 'AwayL', 'PointsPerGameFor': '  PPG', 'PointsPerGameAgainst': 'PPGA', 'GamesBack': '  GB', 'ConferenceRank': 'C_Rank'})
     df['Team'] = df['city'] + ' ' + df['name']
     df = df[['Team','   E/W', 'Wins', 'Losses', 'Percent', 'HomeW', 'HomeL', 'AwayW', 'AwayL', '  PPG', 'PPGA', '  GB', 'C_Rank']]
-    # pdf with data table:
+    return df
+
+def get_data_api2():
+    team = 'CHI'
+    url = 'https://api.sportsdata.io/v3/nba/scores/json/Players/' + team
+    # api key
+    headers = {
+        'Ocp-Apim-Subscription-Key': 'c7c28f449c444a89a2d7e3b1bf9b82d1'
+    }
+    response = requests.request("GET", url, headers=headers)
+    data = response.json()
+    df = pd.DataFrame(data)
+    df = df[['FirstName', 'LastName', 'Position', 'Jersey', 'Height', 'Weight', 'Salary', 'BirthDate', 'BirthState', 'BirthCountry', 'Experience']]
+    df['Name'] = df['FirstName'] + ' ' + df['LastName']
+    df = df[['Name', 'Position', 'Jersey', 'Height', 'Weight', 'Salary', 'BirthDate', 'BirthState', 'BirthCountry', 'Experience']]
+    df = df.rename(columns={'Name': 'Player', 'Position': 'Pos', 'Jersey': 'No.', 'Height': 'Ht.', 'Weight': 'Wt.', 'Salary': 'Salary', 'BirthDate': 'Birth', 'BirthState': 'State', 'BirthCountry': 'Country', 'Experience': 'Exp.'})
+    df['Birth'] = df['Birth'].str.split('T').str[0]
+    return df
+
+
+def get_data_scraping():
+    url = 'https://www.sportytrader.es/pronosticos/nba'
+    page = urllib.request.urlopen(url)
+    soup = bs4.BeautifulSoup(page, 'html.parser')
+    table = soup.find('table', attrs={'class': 'table table-striped table-bordered table-hover table-sm'})
+    table_body = table.find('tbody')
+    rows = table_body.find_all('tr')
+
+    
+def to_pdf(df1, df2):
     pdf = PDF()
     pdf.add_page()
     pdf.set_font('Helvetica', 'B', 8)
-    pdf.cell(45, 10, str(df.columns[0]), 1, 0, 'C')
-    for i in range(1,len(df.columns)):
-        pdf.cell(12, 10, str(df.columns[i]), 1, 0, 'C')
+    pdf.cell(45, 10, str(df1.columns[0]), 1, 0, 'C')
+    for i in range(1,len(df1.columns)):
+        pdf.cell(12, 10, str(df1.columns[i]), 1, 0, 'C')
     pdf.ln()
     pdf.set_font('Helvetica', '', 8)
-    for i in range(len(df)):
+    for i in range(len(df1)):
         pdf.set_font('Helvetica', 'B', 9)
-        pdf.cell(45, 7.5, str(df.iloc[i,0]), 1, 0, 'C')
+        pdf.cell(45, 7.5, str(df1.iloc[i,0]), 1, 0, 'C')
         pdf.set_font('Helvetica', '', 8)
-        for j in range(1,len(df.columns)):
-            pdf.cell(12, 7.5, str(df.iloc[i,j]), 1, 0, 'C')
+        for j in range(1,len(df1.columns)):
+            pdf.cell(12, 7.5, str(df1.iloc[i,j]), 1, 0, 'C')
         pdf.ln()
-    
+
+    pdf.ln(30)
+    pdf.set_font('Helvetica', 'B', 10)
+    pdf.cell(45, 10, str(df2.columns[0]), 1, 0, 'C')
+    for i in range(1,len(df2.columns)):
+        if i == 5 or i == 6 or i == 8:
+            pdf.cell(20, 10, str(df2.columns[i]), 1, 0, 'C')
+        else:
+            pdf.cell(14, 10, str(df2.columns[i]), 1, 0, 'C')
+    pdf.ln()
+    pdf.set_font('Helvetica', '', 9)
+    for i in range(len(df2)):
+        pdf.set_font('Helvetica', 'B', 10)
+        pdf.cell(45, 12, str(df2.iloc[i,0]), 1, 0, 'C')
+        pdf.set_font('Helvetica', '', 9)
+        for j in range(1,len(df2.columns)):
+            if j == 5 or j == 6 or j == 8:
+                pdf.cell(20, 12, str(df2.iloc[i,j]), 1, 0, 'C')
+            else:
+                pdf.cell(14, 12, str(df2.iloc[i,j]), 1, 0, 'C')
+        pdf.ln()
 
     pdf.output('nba_stats.pdf', 'F')
 
-get_data_api()
+
+if __name__ == '__main__':
+    df1 = get_data_api()
+    df2 = get_data_api2()
+    to_pdf(df1, df2)
 
