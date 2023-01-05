@@ -6,10 +6,28 @@ from fpdf import FPDF
 
 class PDF(FPDF):
     def header(self):
-        self.set_font('Helvetica', 'B', 15)
-        self.cell(50)
-        self.cell(90, 10, 'NBA Team Report', 1, 0, 'C')
-        self.ln(20)
+        # que la primera pagina no tenga header ni footer:
+        if self.page_no() == 1:
+            return
+        if self.page_no() == 2:
+            self.set_font('Helvetica', 'B', 15)
+            self.cell(50)
+            self.cell(90, 10, 'Standings 2022', 1, 0, 'C')
+            self.ln(20)
+            self.image('logo.png', 25, 8, 15)
+        if self.page_no() == 3:
+            self.set_font('Helvetica', 'B', 15)
+            self.cell(50)
+            self.cell(90, 10, 'Players Chicago Bulls', 1, 0, 'C')
+            self.ln(20)
+            self.image('logo.png', 25, 8, 15)
+        if self.page_no() == 4:
+            self.set_font('Helvetica', 'B', 15)
+            self.cell(50)
+            self.cell(90, 10, 'Next game', 1, 0, 'C')
+            self.ln(20)
+
+
 
     def footer(self):
         self.set_y(-15)
@@ -18,9 +36,8 @@ class PDF(FPDF):
 
 def get_data_api():
     url = 'https://api.sportsdata.io/v3/nba/scores/json/Standings/2022'
-    headers = {
-        'Ocp-Apim-Subscription-Key': 'c7c28f449c444a89a2d7e3b1bf9b82d1'
-    }
+    with open('config.txt', 'r') as f:
+        headers = {'Ocp-Apim-Subscription-Key': f.read()}
     response = requests.request("GET", url, headers=headers)
     data = response.json()
     df = pd.DataFrame(data)
@@ -32,9 +49,9 @@ def get_data_api():
 def get_data_api2():
     team = 'CHI'
     url = 'https://api.sportsdata.io/v3/nba/scores/json/Players/' + team
-    headers = {
-        'Ocp-Apim-Subscription-Key': 'c7c28f449c444a89a2d7e3b1bf9b82d1'
-    }
+    with open('config.txt', 'r') as f:
+        headers = {'Ocp-Apim-Subscription-Key': f.read()}
+
     response = requests.request("GET", url, headers=headers)
     data = response.json()
     df = pd.DataFrame(data)
@@ -64,11 +81,16 @@ def get_data_scraping():
 def to_pdf(df1, df2, partido, pronostico):
     pdf = PDF()
     pdf.add_page()
+
     pdf.set_font('Helvetica', 'B', 20)
-    pdf.cell(0, 10, 'Chicago Bulls', 0, 0, 'C')
+    pdf.cell(0, 130, 'Chicago Bulls', 0, 0, 'C')
     pdf.ln(20)
     pdf.set_font('Helvetica', 'B', 15)
-    pdf.cell(0, 10, 'Season 2022', 0, 0, 'C')
+    pdf.cell(0, 110, 'Season 2022', 0, 0, 'C')
+    pdf.image('logo.png', 70, 80, 70)
+    
+
+    pdf.ln(20)
     pdf.add_page()
     pdf.set_font('Helvetica', 'B', 8)
     pdf.cell(45, 10, str(df1.columns[0]), 1, 0, 'C')
