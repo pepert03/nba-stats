@@ -6,7 +6,6 @@ from fpdf import FPDF
 
 class PDF(FPDF):
     def header(self):
-        # que la primera pagina no tenga header ni footer:
         if self.page_no() == 1:
             return
         if self.page_no() == 2:
